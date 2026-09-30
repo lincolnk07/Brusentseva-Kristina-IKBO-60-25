@@ -68,3 +68,50 @@ chmod +x reg
 ./reg banner
 
 ~~~
+
+
+## задание 6
+~~~
+nano prog6
+
+#!/bin/bash
+
+for file in *.c *.js *.py
+
+do
+    first_str=$(head -n 1 "$file")
+    if echo "$first_str" | grep -q '^//\|^/\*\|^#'; then
+        echo "$file: comments"
+    else
+        echo "$file: no comments"
+    fi
+done
+
+
+chmod +x prog6
+
+nano test.c
+
+// comment
+int main() {
+    return 0;
+}
+
+nano test.py
+# comment
+print("hello")
+
+nano test.js
+// comment
+console.log("hello");
+
+./prog6
+~~~
+
+Результат: 
+
+<img width="644" height="100" alt="Снимок экрана — 2026-09-30 в 21 43 16" src="https://github.com/user-attachments/assets/96f24607-7e94-46d4-bdcd-0d2f532581ec" />
+
+
+
+
