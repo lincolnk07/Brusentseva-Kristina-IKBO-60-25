@@ -56,3 +56,15 @@ int main() {
 
 <img width="812" height="54" alt="Снимок экрана — 2026-09-30 в 20 39 05" src="https://github.com/user-attachments/assets/2f60a47c-772c-434e-a7ff-dba64f512d1f" />
 
+## задание 5
+~~~
+nano reg
+
+chmod +x "$1"
+sudo cp "$1" /usr/local/bin
+
+chmod +x reg
+
+./reg banner
+
+~~~
