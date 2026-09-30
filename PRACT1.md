@@ -32,3 +32,26 @@ echo "+$line+"
 ~~~
 Результат: 
 <img width="956" height="93" alt="Снимок экрана — 2026-09-30 в 20 11 20" src="https://github.com/user-attachments/assets/db8f294f-b210-4279-adc4-6a2fb91baf89" />
+
+## задание 4
+~~~
+nano identifiers
+
+#!/bin/bash
+grep -o '[A-Za-z_][A-Za-z0-9_]*' "$1" | sort -u | tr '\n' ' '
+
+#include <stdio.h>
+
+int main() {
+    printf("hello world\n");
+    return 0;
+}int main() {
+    int number = 5;
+    printf("hello");
+}
+
+./identifiers main.cpp
+~~~
+Результат: 
+<img width="812" height="54" alt="Снимок экрана — 2026-09-30 в 20 39 05" src="https://github.com/user-attachments/assets/2f60a47c-772c-434e-a7ff-dba64f512d1f" />
+
