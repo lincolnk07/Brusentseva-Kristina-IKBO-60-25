@@ -169,6 +169,27 @@ tar -tf archive.tar
 
 <img width="801" height="128" alt="Снимок экрана — 2026-10-01 в 15 34 58" src="https://github.com/user-attachments/assets/3516ce18-0a1d-4479-806c-01be48909089" />
 
+## задание 9
+~~~
+nano prog7
+
+#!/bin/bash
+sed 's/    /\t/g' "$1" > "$2"
+
+
+chmod +x prog9
+nano input.txt
+
+
+one    two
+hello    world
+
+./prog9 input.txt output.txt
+cat -t output.txt
+~~~
+Результат:
+
+<img width="751" height="84" alt="Снимок экрана — 2026-10-01 в 15 47 44" src="https://github.com/user-attachments/assets/5abce8c7-b0ee-4e00-be5c-c578bf99e7ea" />
 
 
 
