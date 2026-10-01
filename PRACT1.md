@@ -111,6 +111,42 @@ console.log("hello");
 
 <img width="644" height="100" alt="Снимок экрана — 2026-09-30 в 21 43 16" src="https://github.com/user-attachments/assets/96f24607-7e94-46d4-bdcd-0d2f532581ec" />
 
+## задание 7
+~~~
+nano prog7
+
+#!/bin/bash
+
+find "$1" -type f -exec md5sum {} + | sort | awk '
+{
+    hash = $1
+    file = $2
+
+    if (hash == prev_hash) {
+        if (printed == 0) {
+            print prev_file
+            printed = 1
+        }
+        print file
+    } else {
+        printed = 0
+    }
+
+    prev_hash = hash
+    prev_file = file
+}
+'
+chmod +x prog7
+mkdir test_dup
+echo hello >> test_dup/a.txt
+echo hello >> test_dup/b.txt
+echo world >> test_dup/c.txt
+./prog7 test_dup
+~~~
+Результат:
+<img width="734" height="77" alt="Снимок экрана — 2026-10-01 в 13 47 11" src="https://github.com/user-attachments/assets/16bcd578-84e5-4b8b-9eb2-89be1e9e2b65" />
+
+
 
 
 
