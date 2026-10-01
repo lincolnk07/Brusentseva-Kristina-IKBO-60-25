@@ -144,6 +144,7 @@ echo world >> test_dup/c.txt
 ./prog7 test_dup
 ~~~
 Результат:
+
 <img width="734" height="77" alt="Снимок экрана — 2026-10-01 в 13 47 11" src="https://github.com/user-attachments/assets/16bcd578-84e5-4b8b-9eb2-89be1e9e2b65" />
 
 
