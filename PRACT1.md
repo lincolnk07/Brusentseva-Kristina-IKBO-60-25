@@ -192,6 +192,26 @@ cat -t output.txt
 <img width="751" height="84" alt="Снимок экрана — 2026-10-01 в 15 47 44" src="https://github.com/user-attachments/assets/5abce8c7-b0ee-4e00-be5c-c578bf99e7ea" />
 
 
+## задание 10
+~~~
+nano prog10
+
+#!/bin/bash
+find "$1" -type f -name "*.txt" -empty
+
+chmod +x prog10
+mkdir test_prog10
+touch test_prog10/c.py
+echo hello >> test_prog10/1.txt
+touch test_prog10/2.txt
+./prog10 test_prog10
+
+~~~
+Результат:
+
+<img width="779" height="54" alt="Снимок экрана — 2026-10-01 в 16 55 50" src="https://github.com/user-attachments/assets/5c1db658-0378-48bb-9daa-337163002d2f" />
+
+
 
 
 
