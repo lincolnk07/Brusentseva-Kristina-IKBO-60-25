@@ -147,6 +147,30 @@ echo world >> test_dup/c.txt
 
 <img width="734" height="77" alt="Снимок экрана — 2026-10-01 в 13 47 11" src="https://github.com/user-attachments/assets/16bcd578-84e5-4b8b-9eb2-89be1e9e2b65" />
 
+## задание 8
+~~~
+nano prog8
+
+#!/bin/bash
+tar -cf archive.tar $(find "$1" -type f -name "*.$2")
+
+chmod +x prog8
+
+mkdir test_arch
+echo "gfvfvvff" >> test_arch/1.txt
+echo "gfvfvvff" >> test_arch/2.txt
+echo "gfvfvvff" >> test_arch/3.txt
+./prog8 test_arch txt
+
+tar -tf archive.tar
+
+~~~
+Результат:
+
+<img width="801" height="128" alt="Снимок экрана — 2026-10-01 в 15 34 58" src="https://github.com/user-attachments/assets/3516ce18-0a1d-4479-806c-01be48909089" />
+
+
+
 
 
 
