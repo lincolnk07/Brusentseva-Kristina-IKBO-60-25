@@ -77,16 +77,15 @@ nano prog6
 #!/bin/bash
 
 for file in *.c *.js *.py
-
 do
     first_str=$(head -n 1 "$file")
-    if echo "$first_str" | grep -q '^//\|^/\*\|^#'; then
+
+    if echo "$first_str" | grep -qE '^[[:space:]]*(//|/\*|#)'; then
         echo "$file: comments"
     else
         echo "$file: no comments"
     fi
 done
-
 
 chmod +x prog6
 
@@ -98,7 +97,7 @@ int main() {
 }
 
 nano test.py
-# comment
+   # comment
 print("hello")
 
 nano test.js
