@@ -1,0 +1,6 @@
+package_name = "Serilog"
+repository_url = "https://api.nuget.org/v3/index.json"
+test_repository = false
+graph_file = "output/serilog.svg"
+ascii_tree = false
+filter_substring = ""

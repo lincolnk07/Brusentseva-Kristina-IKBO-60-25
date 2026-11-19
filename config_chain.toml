@@ -1,0 +1,6 @@
+package_name = "A"
+repository_url = "tests/fixtures/test_graph_chain.toml"
+test_repository = true
+graph_file = "dependency_graph_chain.svg"
+ascii_tree = true
+filter_substring = ""
