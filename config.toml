@@ -1,0 +1,6 @@
+package_name = "Newtonsoft.Json"
+repository_url = "https://api.nuget.org/v3/index.json"
+test_repository = false
+graph_file = "dependency_graph.svg"
+ascii_tree = false
+filter_substring = ""
