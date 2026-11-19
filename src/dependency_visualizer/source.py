@@ -18,7 +18,11 @@ TIMEOUT_SECONDS = 20
 
 
 class NuGetSource:
-    """Query NuGet V3 metadata without using a package manager."""
+    """Read declared NuGet dependencies without performing package restore.
+
+    Dependencies from all framework groups are combined. This creates a
+    generalized declaration graph, not a target-framework-resolved graph.
+    """
 
     def __init__(self, service_index_url: str) -> None:
         """Store the service index URL and initialize request caches."""
@@ -28,7 +32,7 @@ class NuGetSource:
         self.dependency_cache: dict[str, list[str]] = {}
 
     def direct_dependencies(self, package_name: str) -> list[str]:
-        """Return dependencies of the latest stable package version."""
+        """Return dependencies from all groups of the latest stable version."""
         package_id = package_name.lower()
         version = self._latest_version(package_id)
         return self._dependencies_for_version(package_id, version)
@@ -59,7 +63,7 @@ class NuGetSource:
     def _dependencies_for_version(
         self, package_id: str, version: str
     ) -> list[str]:
-        """Read and resolve all declared dependency groups in a nuspec."""
+        """Combine dependency IDs from all framework groups in a nuspec."""
         cache_key = f"{package_id}/{version}"
         if cache_key not in self.dependency_cache:
             package_url = urljoin(
@@ -72,7 +76,7 @@ class NuGetSource:
         return self.dependency_cache[cache_key]
 
     def _parse_nuspec(self, xml_data: str) -> list[str]:
-        """Return distinct package IDs declared in every dependency group."""
+        """Return IDs declared in every group, ignoring version constraints."""
         try:
             root = element_tree.fromstring(xml_data)
         except element_tree.ParseError as error:

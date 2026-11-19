@@ -10,8 +10,8 @@
 
 - Python 3.11 или новее.
 - Для анализа реальных пакетов требуется доступ к NuGet V3 URL.
-- Для необязательной проверки оформления PEP 8: `python3 -m pip install
-  pycodestyle`.
+- Для проверки PEP 8 установите закреплённую версию инструмента через
+  `make install-dev`.
 - Для автоматических тестов используется встроенный модуль `unittest`.
 
 Для получения реальных данных инструмент использует стандартные модули Python
@@ -111,6 +111,48 @@ D = []
 ```
 
 Результаты сохраняются в `output/` под разными именами.
+Полные SVG и PlantUML создаются локально и не хранятся в Git. Ниже приведены
+Mermaid-представления связей из графов программы; GitHub отображает их прямо
+в README. Для получения полных изображений выполните команды выше.
+
+### Newtonsoft.Json
+
+```mermaid
+graph LR
+    Newtonsoft["Newtonsoft.Json"] --> CSharp["Microsoft.CSharp"]
+    Newtonsoft --> NetStandard["NETStandard.Library"]
+    Newtonsoft --> TypeConverter["System.ComponentModel.TypeConverter"]
+    Newtonsoft --> Formatters["System.Runtime.Serialization.Formatters"]
+    Newtonsoft --> Primitives["System.Runtime.Serialization.Primitives"]
+    Newtonsoft --> XmlDocument["System.Xml.XmlDocument"]
+```
+
+### Serilog
+
+```mermaid
+graph LR
+    Serilog --> DiagnosticSource["System.Diagnostics.DiagnosticSource"]
+    Serilog --> Channels["System.Threading.Channels"]
+    Serilog --> ValueTuple["System.ValueTuple"]
+    DiagnosticSource --> Memory["System.Memory"]
+    DiagnosticSource --> Unsafe["System.Runtime.CompilerServices.Unsafe"]
+    Memory --> Buffers["System.Buffers"]
+    Memory --> Vectors["System.Numerics.Vectors"]
+    Memory --> Unsafe["System.Runtime.CompilerServices.Unsafe"]
+    Channels --> AsyncInterfaces["Microsoft.Bcl.AsyncInterfaces"]
+    Channels --> TasksExtensions["System.Threading.Tasks.Extensions"]
+    AsyncInterfaces --> TasksExtensions
+    TasksExtensions --> Unsafe
+```
+
+### NUnit
+
+```mermaid
+graph LR
+    NUnit --> TasksExtensions["System.Threading.Tasks.Extensions"]
+    NUnit --> ValueTuple["System.ValueTuple"]
+    TasksExtensions --> Unsafe["System.Runtime.CompilerServices.Unsafe"]
+```
 
 ## Функции проекта
 
@@ -127,9 +169,13 @@ D = []
 
 ## Автоматические проверки
 
-Запустите модульные тесты и проверку PEP 8 из корня проекта:
+Создайте виртуальное окружение, установите закреплённую версию `pycodestyle`,
+затем запустите модульные тесты и проверку PEP 8:
 
 ```sh
+python3 -m venv .venv
+. .venv/bin/activate
+make install-dev
 make test
 make lint
 ```
@@ -138,38 +184,59 @@ make lint
 фильтр, порядок, циклы, TOML тестового репозитория, сравнение версий NuGet,
 извлечение `.nuspec`, PlantUML и разбор созданного SVG.
 
-## Сравнение с `dotnet`
+## Сравнение со штатным графом NuGet
 
-Проверка выполнена 20 ноября 2026 года на временных проектах с .NET SDK
-11.0.100 и целевой платформой `net11.0`. Версии пакетов выбраны NuGet как
-последние стабильные:
+Проверка выполнена 20 ноября 2026 года с .NET SDK 11.0.100 и `net8.0`.
+`dotnet nuget why` выводит граф зависимостей пакета для выбранного проекта и
+целевой платформы ([документация Microsoft](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-nuget-why)).
+Версии пакетов зафиксированы в команде воспроизведения и соответствуют
+последним стабильным на дату проверки.
 
-| Пакет | Версия NuGet | Узлов/рёбер в SVG инструмента | Транзитивных пакетов в `dotnet list package --include-transitive` |
-| --- | --- | ---: | ---: |
-| `Newtonsoft.Json` | `13.0.4` | 96 / 518 | 0 |
-| `Serilog` | `4.4.0` | 10 / 12 | 0 |
-| `NUnit` | `5.0.0` | 4 / 3 | 0 |
+| Пакет | Версия | Узлов/рёбер приложения | Прямые рёбра обобщённого графа | `dotnet nuget why` для `net8.0` |
+| --- | --- | ---: | --- | --- |
+| `Newtonsoft.Json` | `13.0.4` | 96 / 518 | `Microsoft.CSharp`, `NETStandard.Library`, `System.ComponentModel.TypeConverter`, `System.Runtime.Serialization.Formatters`, `System.Runtime.Serialization.Primitives`, `System.Xml.XmlDocument` | Только `Newtonsoft.Json@13.0.4`; `NETStandard.Library` не входит в восстановленный граф |
+| `Serilog` | `4.4.0` | 10 / 12 | `System.Diagnostics.DiagnosticSource`, `System.Threading.Channels`, `System.ValueTuple` | Только `Serilog@4.4.0`; `System.Diagnostics.DiagnosticSource` не входит в восстановленный граф |
+| `NUnit` | `5.0.0` | 4 / 3 | `System.Threading.Tasks.Extensions`, `System.ValueTuple` | Только `NUnit@5.0.0`; `System.Threading.Tasks.Extensions` не входит в восстановленный граф |
 
-Команда сравнения для каждого временного проекта:
+Полное сравнение воспроизводится скриптом. Нужен .NET SDK 8.0.4xx или новее;
+скрипт создаёт временные проекты, восстанавливает выбранные версии и вызывает
+штатную команду для корневого пакета и одного объявленного дочернего пакета:
 
 ```sh
-dotnet list package --include-transitive
+./scripts/compare_nuget.sh
 ```
 
-В `dotnet` во всех трёх проектах отображается только верхнеуровневый пакет.
-Граф визуализатора шире, потому что анализатор объединяет зависимости из всех
-NuGet dependency groups, а restore для `net11.0` выбирает совместимые группы.
-Кроме того, restore разрешает version ranges с учётом целевой платформы, тогда
-как анализатор выбирает последнюю стабильную версию при обходе. Поэтому число
-узлов и рёбер расходится; это ограничение следует из заданных шести настроек,
-среди которых целевой framework отсутствует.
+В каждом примере штатный граф `net8.0` содержит только верхнеуровневый пакет;
+проверка его прямого дочернего пакета завершается сообщением «нет зависимости».
+Обобщённый граф приложения показывает дополнительные связи, объявленные в
+других группах `.nuspec`. Результаты различаются потому, что NuGet выбирает
+совместимую с целевой платформой группу и разрешает ограничения версий, а
+приложение собирает идентификаторы зависимостей из всех групп.
 
-`dotnet list package` показывает восстановленный набор пакетов, но не задаёт
-публичный порядок их установки. Поэтому порядок этапа 4 можно сопоставить с
-зависимостями графа, но не с гарантированной последовательностью загрузки
-NuGet. Постфиксный DFS приложения выводит зависимости перед зависимыми от них
-пакетами; для графа с циклом корректный линейный порядок не существует.
-Тестовые графы сравниваются между собой для проверки DFS, циклов и фильтра.
+Порядок этапа 4 — постфиксный DFS по объявленным рёбрам. Он не заявляется как
+порядок восстановления или загрузки пакетов NuGet.
+
+## Семантика графа NuGet
+
+Граф реального NuGet-пакета обозначает **обобщённый граф объявленных
+зависимостей**: для последней стабильной версии каждого пакета объединяются
+связи из всех групп `.nuspec`. Версионные ограничения и целевые платформы не
+разрешаются. Поэтому SVG не следует трактовать как результат `restore` для
+конкретного проекта и framework. В CLI эта семантика также печатается при
+построении реального графа. Такой режим соответствует имеющимся шести
+настройкам: отдельного параметра целевой платформы среди них нет.
+
+## Проверка сообщений Git-коммитов
+
+С6 проверяется для истории этой практической работы — от базового коммита
+`a0c8ba2` до текущего `HEAD`:
+
+```sh
+./scripts/check_scoped_commits.sh a0c8ba2 HEAD
+```
+
+Опубликованные ранее коммиты предыдущей практической работы не входят в эту
+область проверки и не переписываются.
 
 ## Структура проекта
 
@@ -182,7 +249,11 @@ NuGet. Постфиксный DFS приложения выводит завис
 ├── examples/
 ├── Makefile
 ├── README.md
+├── requirements-dev.txt
 ├── run.sh
+├── scripts/
+│   ├── check_scoped_commits.sh
+│   └── compare_nuget.sh
 ├── src/
 │   └── dependency_visualizer/
 └── tests/

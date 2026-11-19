@@ -42,6 +42,8 @@ def run_stage(settings: Settings, stage: int) -> None:
         source.direct_dependencies,
         settings.filter_substring,
     )
+    if not settings.test_repository:
+        print_graph_scope()
     report_cycles(graph.cycles)
     if stage == 3:
         print_graph(graph)
@@ -62,6 +64,14 @@ def print_settings(settings: Settings) -> None:
     """Print every user-configurable parameter as key-value pairs."""
     for key, value in settings.__dict__.items():
         print(f"{key} = {value}")
+
+
+def print_graph_scope() -> None:
+    """Clarify how dependencies in live NuGet graphs are interpreted."""
+    print(
+        "Graph scope: generalized declared dependencies; all framework "
+        "groups are combined and version constraints are not resolved."
+    )
 
 
 def print_direct_dependencies(
