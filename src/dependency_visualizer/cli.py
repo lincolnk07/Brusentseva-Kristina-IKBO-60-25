@@ -1,4 +1,4 @@
-"""Command-line interface for recursive dependency graph construction."""
+"""Command-line interface through dependency load-order reporting."""
 
 import argparse
 import sys
@@ -9,10 +9,10 @@ from dependency_visualizer.source import NuGetSource, TestGraphSource
 
 
 def main(arguments: list[str] | None = None) -> int:
-    """Run one of the first three stages."""
+    """Run one of the first four stages."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.toml")
-    parser.add_argument("--stage", type=int, choices=(1, 2, 3), default=3)
+    parser.add_argument("--stage", type=int, choices=(1, 2, 3, 4), default=4)
     options = parser.parse_args(arguments)
     try:
         settings = load_settings(options.config)
@@ -37,12 +37,26 @@ def main(arguments: list[str] | None = None) -> int:
                     source.direct_dependencies,
                     settings.filter_substring,
                 )
-                for package, dependencies in graph.edges.items():
-                    if dependencies:
-                        for dependency in dependencies:
-                            print(f"{package} -> {dependency}")
-                    else:
-                        print(f"{package} -> (no dependencies)")
+                if options.stage == 3:
+                    for package, dependencies in graph.edges.items():
+                        if dependencies:
+                            for dependency in dependencies:
+                                print(f"{package} -> {dependency}")
+                        else:
+                            print(f"{package} -> (no dependencies)")
+                elif graph.cycles:
+                    for package, dependency in graph.cycles:
+                        print(
+                            f"Cycle detected: {package} -> {dependency}",
+                            file=sys.stderr,
+                        )
+                    print("No dependency load order exists.")
+                else:
+                    print("Dependency load order:")
+                    for index, package in enumerate(
+                        graph.load_order[:-1], start=1
+                    ):
+                        print(f"{index}. {package}")
     except (OSError, ValueError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
