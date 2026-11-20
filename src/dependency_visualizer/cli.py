@@ -1,3 +1,4 @@
+
 """Command-line interface for the five project stages."""
 
 import argparse
@@ -9,13 +10,25 @@ from dependency_visualizer.render import save_plantuml, save_svg
 from dependency_visualizer.source import NuGetSource, TestGraphSource
 
 
+STAGE_CONFIG = 1
+STAGE_DIRECT = 2
+STAGE_GRAPH = 3
+STAGE_ORDER = 4
+STAGE_VISUALIZATION = 5
+
+
 def parse_arguments(arguments: list[str] | None = None) -> argparse.Namespace:
     """Parse command-line options for configuration and selected stage."""
     parser = argparse.ArgumentParser(
         description="Visualize dependencies of a NuGet package."
     )
     parser.add_argument("--config", default="config.toml")
-    parser.add_argument("--stage", type=int, choices=range(1, 6), default=5)
+    parser.add_argument(
+        "--stage",
+        type=int,
+        choices=range(STAGE_CONFIG, STAGE_VISUALIZATION + 1),
+        default=STAGE_VISUALIZATION,
+    )
     return parser.parse_args(arguments)
 
 
@@ -28,12 +41,12 @@ def create_source(settings: Settings) -> NuGetSource | TestGraphSource:
 
 def run_stage(settings: Settings, stage: int) -> None:
     """Run the requested assignment stage."""
-    if stage == 1:
+    if stage == STAGE_CONFIG:
         print_settings(settings)
         return
 
     source = create_source(settings)
-    if stage == 2:
+    if stage == STAGE_DIRECT:
         print_direct_dependencies(settings, source)
         return
 
@@ -45,9 +58,10 @@ def run_stage(settings: Settings, stage: int) -> None:
     if not settings.test_repository:
         print_graph_scope()
     report_cycles(graph.cycles)
-    if stage == 3:
+
+    if stage == STAGE_GRAPH:
         print_graph(graph)
-    elif stage == 4:
+    elif stage == STAGE_ORDER:
         if graph.cycles:
             print("No dependency load order exists for a cyclic graph.")
             return
