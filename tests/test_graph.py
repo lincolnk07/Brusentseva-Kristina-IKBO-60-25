@@ -29,6 +29,13 @@ class GraphTests(unittest.TestCase):
         self.assertEqual(graph.load_order, ["D", "B", "C", "A"])
         self.assertEqual(graph.cycles, [])
 
+    def test_chain_order_includes_root_last(self) -> None:
+        """List C, B, A for the chain A -> B -> C."""
+        chain = {"A": ["B"], "B": ["C"], "C": []}
+        graph = build_graph("A", chain.__getitem__, "")
+
+        self.assertEqual(graph.load_order, ["C", "B", "A"])
+
     def test_excludes_names_containing_filter(self) -> None:
         """Remove filtered packages and their outgoing edges."""
         graph = build_graph("A", dependencies_for, "B")

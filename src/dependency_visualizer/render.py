@@ -53,9 +53,8 @@ def save_svg(graph: DependencyGraph, output_path: str) -> Path:
 
 
 def node_id(package: str) -> str:
-    """Create a stable PlantUML identifier from a package name."""
-    token = "".join(char if char.isalnum() else "_" for char in package)
-    return "package_" + token
+    """Create a collision-free PlantUML identifier from UTF-8 bytes."""
+    return "package_" + package.encode("utf-8").hex()
 
 
 def graph_levels(graph: DependencyGraph) -> dict[str, int]:

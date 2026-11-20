@@ -51,11 +51,7 @@ def run_stage(settings: Settings, stage: int) -> None:
         if graph.cycles:
             print("No dependency load order exists for a cyclic graph.")
             return
-        dependencies = [
-            package for package in graph.load_order
-            if package != graph.root
-        ]
-        print_load_order(dependencies)
+        print_load_order(graph.load_order)
     else:
         print_visualization(settings, graph)
 
@@ -95,7 +91,7 @@ def print_graph(graph: object) -> None:
 
 def print_load_order(packages: list[str]) -> None:
     """Print the DFS postorder used as dependency load order."""
-    print("Dependency load order:")
+    print("Dependency-first DFS order:")
     for index, package in enumerate(packages, start=1):
         print(f"{index}. {package}")
 

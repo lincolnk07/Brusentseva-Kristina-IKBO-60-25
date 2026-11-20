@@ -7,6 +7,7 @@ if [ "$#" -gt 1 ]; then
 fi
 
 dotnet=${1:-dotnet}
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 framework=net8.0
 temporary_root=$(mktemp -d "${TMPDIR:-/tmp}/nuget-graph-compare.XXXXXX")
 trap 'rm -rf "$temporary_root"' EXIT HUP INT TERM
@@ -30,9 +31,11 @@ compare_package() {
 EOF_PROJECT
 
     echo "=== $package $version ($framework): root graph ==="
-    "$dotnet" restore "$project_dir"
+    "$dotnet" restore "$project_dir" -p:NuGetAudit=false
     "$dotnet" nuget why "$project_dir" "$package" \
         --framework "$framework"
+    python3 "$script_dir/print_assets_order.py" \
+        "$project_dir/obj/project.assets.json" "$framework"
     echo "=== Query of declared child $declared_child ==="
     "$dotnet" nuget why "$project_dir" "$declared_child" \
         --framework "$framework"

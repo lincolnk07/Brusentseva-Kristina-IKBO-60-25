@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 from zipfile import ZipFile
 
 from dependency_visualizer.graph import build_graph
-from dependency_visualizer.render import save_plantuml, save_svg
+from dependency_visualizer.render import node_id, save_plantuml, save_svg
 from dependency_visualizer.source import (
     NuGetSource,
     TestGraphSource,
@@ -87,6 +87,27 @@ class SourceAndRenderTests(unittest.TestCase):
             self.assertIn("@startuml", plantuml_path.read_text())
             self.assertTrue(saved_svg.is_file())
             ElementTree.parse(saved_svg)
+
+    def test_plantuml_ids_are_unique_for_distinct_names(self) -> None:
+        """Keep package names A-B and A_B as separate PlantUML vertices."""
+        graph_data = {"root": ["A-B", "A_B"], "A-B": [], "A_B": []}
+        graph = build_graph("root", graph_data.__getitem__, "")
+
+        self.assertNotEqual(node_id("A-B"), node_id("A_B"))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = save_plantuml(
+                graph, str(Path(temp_dir) / "collision.svg")
+            )
+            plantuml = path.read_text(encoding="utf-8")
+
+        self.assertIn('component "A-B" as package_412d42', plantuml)
+        self.assertIn('component "A_B" as package_415f42', plantuml)
+        self.assertIn(
+            f"{node_id('root')} --> {node_id('A-B')}", plantuml
+        )
+        self.assertIn(
+            f"{node_id('root')} --> {node_id('A_B')}", plantuml
+        )
 
 
 if __name__ == "__main__":

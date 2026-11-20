@@ -11,7 +11,7 @@ lint:
 		echo "Install dev dependencies with: make install-dev"; \
 		exit 1; \
 	}
-	python3 -m pycodestyle --max-line-length=79 src tests
+	python3 -m pycodestyle --max-line-length=79 src tests scripts
 
 install-dev:
 	python3 -m pip install -r requirements-dev.txt

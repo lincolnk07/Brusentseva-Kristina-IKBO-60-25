@@ -10,7 +10,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 import xml.etree.ElementTree as element_tree
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
 
 
 USER_AGENT = "dependency-visualizer/1.0"
@@ -195,6 +195,6 @@ def nuspec_from_archive(package_data: bytes) -> str:
                 if name.lower().endswith(".nuspec")
             )
             return archive.read(nuspec_path).decode("utf-8-sig")
-    except (OSError, StopIteration, KeyError) as error:
+    except (BadZipFile, OSError, StopIteration, KeyError) as error:
         message = f"NuGet package has no readable nuspec: {error}"
         raise ValueError(message) from error
