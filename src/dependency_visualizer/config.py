@@ -57,31 +57,59 @@ def load_settings(path: str) -> Settings:
 
 
 def validate_settings(settings: Settings) -> None:
-    """Validate field types and the active repository location."""
-    if not isinstance(settings.package_name, str) or not settings.package_name:
-        raise ValueError("package_name must be a non-empty string")
-    if (
-        not isinstance(settings.repository_url, str)
-        or not settings.repository_url
-    ):
-        raise ValueError("repository_url must be a non-empty string")
-    if not isinstance(settings.test_repository, bool):
-        raise ValueError("test_repository must be true or false")
-    if not isinstance(settings.graph_file, str) or not settings.graph_file:
-        raise ValueError("graph_file must be a non-empty file name")
-    if Path(settings.graph_file).suffix.lower() != ".svg":
-        raise ValueError("graph_file must have the .svg extension")
-    if not isinstance(settings.ascii_tree, bool):
-        raise ValueError("ascii_tree must be true or false")
-    if not isinstance(settings.filter_substring, str):
-        raise ValueError("filter_substring must be a string")
+    """Validate all configuration parameters."""
+    validate_package_name(settings.package_name)
+    validate_boolean(settings.test_repository, "test_repository")
+    validate_repository_url(
+        settings.repository_url,
+        settings.test_repository,
+    )
+    validate_graph_file(settings.graph_file)
+    validate_boolean(settings.ascii_tree, "ascii_tree")
+    validate_filter_substring(settings.filter_substring)
 
-    if settings.test_repository:
-        if not Path(settings.repository_url).is_file():
+
+def validate_package_name(package_name: str) -> None:
+    """Validate the package name."""
+    if not isinstance(package_name, str) or not package_name:
+        raise ValueError("package_name must be a non-empty string")
+
+
+def validate_repository_url(
+    repository_url: str,
+    test_repository: bool,
+) -> None:
+    """Validate the repository URL or test repository path."""
+    if not isinstance(repository_url, str) or not repository_url:
+        raise ValueError("repository_url must be a non-empty string")
+
+    if test_repository:
+        if not Path(repository_url).is_file():
             raise ValueError("Test repository file does not exist")
     else:
-        parsed_url = urlparse(settings.repository_url)
+        parsed_url = urlparse(repository_url)
         if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
             raise ValueError(
                 "repository_url must be an HTTP or HTTPS URL"
             )
+
+
+def validate_boolean(value: object, name: str) -> None:
+    """Validate a boolean configuration parameter."""
+    if not isinstance(value, bool):
+        raise ValueError(f"{name} must be true or false")
+
+
+def validate_graph_file(graph_file: str) -> None:
+    """Validate the output SVG file name."""
+    if not isinstance(graph_file, str) or not graph_file:
+        raise ValueError("graph_file must be a non-empty file name")
+
+    if Path(graph_file).suffix.lower() != ".svg":
+        raise ValueError("graph_file must have the .svg extension")
+
+
+def validate_filter_substring(filter_substring: str) -> None:
+    """Validate the dependency filter."""
+    if not isinstance(filter_substring, str):
+        raise ValueError("filter_substring must be a string")

@@ -115,6 +115,7 @@ class NuGetSource:
 
 class TestGraphSource:
     """Read a package graph from a TOML test repository file."""
+    __test__ = False
 
     def __init__(self, path: str) -> None:
         """Load package-to-dependency mappings from a TOML file."""
