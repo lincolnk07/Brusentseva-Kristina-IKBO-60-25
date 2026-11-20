@@ -52,38 +52,44 @@ def package_archive(nuspec: str) -> bytes:
     return archive_data.getvalue()
 
 
+def latest_version_response() -> tuple[object, list[tuple[str, int]]]:
+    """Prepare mocked NuGet responses for latest-version selection."""
+    nuspec = (
+        '<package><metadata><dependencies>'
+        '<group targetFramework="net8.0">'
+        '<dependency id="Shared" version="[1.0.0, 2.0.0)"/>'
+        '<dependency id="Modern" version="[4.0, 5.0)"/>'
+        '</group>'
+        '<group targetFramework=".NETFramework4.7.2">'
+        '<dependency id="Shared" version="[3.0.0, 4.0.0)"/>'
+        '<dependency id="Legacy" version="2.0"/>'
+        '</group>'
+        '</dependencies></metadata></package>'
+    )
+    package_bytes = package_archive(nuspec)
+    requested_urls: list[tuple[str, int]] = []
+
+    def open_url(request: object, timeout: int) -> FakeResponse:
+        url = request.full_url
+        requested_urls.append((url, timeout))
+        if url == SERVICE_URL:
+            return FakeResponse(service_index())
+        if url == f"{BASE_URL}alpha/index.json":
+            versions = {"versions": ["1.0.0", "1.2.0", "2.0.0-rc.1"]}
+            return FakeResponse(json.dumps(versions).encode("utf-8"))
+        if url == f"{BASE_URL}alpha/1.2.0/alpha.1.2.0.nupkg":
+            return FakeResponse(package_bytes)
+        raise AssertionError(f"Unexpected HTTP URL: {url}")
+
+    return open_url, requested_urls
+
+
 class NuGetHttpTests(unittest.TestCase):
     """Verify V3 source selection, downloads, and API failures."""
 
     def test_reads_service_index_and_latest_version_groups(self) -> None:
         """Choose latest stable and merge declared framework groups."""
-        nuspec = (
-            '<package><metadata><dependencies>'
-            '<group targetFramework="net8.0">'
-            '<dependency id="Shared" version="[1.0.0, 2.0.0)"/>'
-            '<dependency id="Modern" version="[4.0, 5.0)"/>'
-            '</group>'
-            '<group targetFramework=".NETFramework4.7.2">'
-            '<dependency id="Shared" version="[3.0.0, 4.0.0)"/>'
-            '<dependency id="Legacy" version="2.0"/>'
-            '</group>'
-            '</dependencies></metadata></package>'
-        )
-        package_bytes = package_archive(nuspec)
-        requested_urls = []
-
-        def open_url(request: object, timeout: int) -> FakeResponse:
-            url = request.full_url
-            requested_urls.append((url, timeout))
-            if url == SERVICE_URL:
-                return FakeResponse(service_index())
-            if url == f"{BASE_URL}alpha/index.json":
-                versions = {"versions": ["1.0.0", "1.2.0", "2.0.0-rc.1"]}
-                return FakeResponse(json.dumps(versions).encode("utf-8"))
-            if url == f"{BASE_URL}alpha/1.2.0/alpha.1.2.0.nupkg":
-                return FakeResponse(package_bytes)
-            self.fail(f"Unexpected HTTP URL: {url}")
-
+        open_url, requested_urls = latest_version_response()
         with patch(
             "dependency_visualizer.source.urlopen", side_effect=open_url
         ):
